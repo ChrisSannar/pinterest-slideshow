@@ -1,0 +1,33 @@
+.center-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.board-text {
+  color: #333333;
+  letter-spacing: -.4px;
+}
+
+.board-btn {
+  cursor: pointer;
+  border: none;
+  background-color: #EFEFEF;
+  text-align: center;
+  padding: 1em;
+  margin: 0.5em;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  transition: 0.15s;
+}
+
+.board-btn:hover {
+  background-color: #e2e2e2;
+}
+
+.board-btn:focus {
+  outline: 0;
+}

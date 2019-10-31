@@ -1,3 +1,5 @@
+Displays a slide show of the images on a board. A functionality that once did exist on pinterest, but no longer does.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

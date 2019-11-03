@@ -15,8 +15,13 @@
   height: 100%;
   width: 100%;
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-around;
   align-items: center;
+}
+
+.prev, .next, .exit {
+  opacity: 0;
+  transition: 0.3s;
 }
 
 .prev, .next {

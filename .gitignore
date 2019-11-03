@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# security
+server.key
+
+# personal
+server.crt
+stuff.txt

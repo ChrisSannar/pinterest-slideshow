@@ -11,6 +11,10 @@ import Boards from './components/Boards/Boards.js';
 import Error from './components/Error/Error.js';
 import Slideshow from './components/Slideshow/Slideshow.js';
 
+/*
+  Note: Some of the functions are arrow functions and some are not, just to test how 
+    'this' and 'bind' work in application.
+*/
 export default class App extends React.Component {
 
   constructor(props) {
@@ -20,20 +24,23 @@ export default class App extends React.Component {
     let currentAccessToken = `AonrCUbSMKR-Uezxmzl5jWSzA-ZMFdG_dGdoBEpGM-hkAaC9LATfgDAAAIaBRjt5LA8gv40AAAAA`;
     // ***
 
+    // ***
     let temp = [{
         "url": "https://www.pinterest.com/chrissannar/ha/",
         "id": "351140170885836302",
         "name": "Ha"
       }];
+    // ***
 
     // Set our state with the access token to get it everywehre
     this.state = { 
       accessToken: currentAccessToken,
       query: ``, // ***
       boardInfo: temp,  // [], ***
+      disableBoards: false,
       username: `chrissannar`, // ``, ***
-      showSlides: false,
-      pins: [],
+      showSlides: false, // false,
+      pins: [1,2,3],
       page: {}
     };
 
@@ -44,6 +51,8 @@ export default class App extends React.Component {
     this.getBoards = this.getBoards.bind(this);
     this.logState = this.logState.bind(this);
     this.selectBoard = this.selectBoard.bind(this);
+    this.renderSlideshow = this.renderSlideshow.bind(this);
+    // this.closeSlideshow = this.closeSlideshow.bind(this);
   }
 
   // Gets the access token given the authorization info
@@ -67,16 +76,7 @@ export default class App extends React.Component {
               accessToken: resp.data.access_token
             });
 
-            // Retrieve the username and set the state with it
-            axios.get(`https://api.pinterest.com/v1/me/?access_token=${this.resp.data.access_token}&fields=username`)
-              .then(resp => {
-                self.setState({
-                  username: resp.data.data.username
-                });
-              })
-              .catch(err => {
-                console.error(`BAD USERNAME`, err);
-              })
+            this.setStateWithUsername();
 
             res(true);
           })
@@ -92,12 +92,25 @@ export default class App extends React.Component {
  
   }
 
+  // Retrieves the username and set the state with it
+  setStateWithUsername = () => {
+    let self = this;
+    axios.get(`https://api.pinterest.com/v1/me/?access_token=${this.resp.data.access_token}&fields=username`)
+      .then(resp => {
+        self.setState({
+          username: resp.data.data.username
+        });
+      })
+      .catch(err => {
+        console.error(`BAD USERNAME`, err);
+      });
+  }
+
   // *** These are here to test out the data we're getting back from the api
   inputChange(event) {
     this.setState({ query: event.target.value });
   }
 
-  // ***
   makeRequest() {
 
     // Current: look up pins
@@ -127,7 +140,7 @@ export default class App extends React.Component {
     axios.get(`https://api.pinterest.com/v1/me/boards/?access_token=${this.state.accessToken}&fields=id,name,url`)
       .then(resp => {
         console.log(`BOARDS`, resp);
-        self.setState({ boardInfo: resp.data.data });
+        self.setState({ boardInfo: resp.data.data });   // Set the list of boards
       })
       .catch(err => {
         console.error(`BAD BOARDS`, err);
@@ -135,14 +148,61 @@ export default class App extends React.Component {
     
   }
 
+  // Gets the data for the given board and sets the state with the given values
   selectBoard(boardName) {
+    this.setState({ disableBoards: true });
+
+    // ***
+    // let temp = [{
+    //     "note": "Funny memes",
+    //     "image": {
+    //         "original": {
+    //             "url": "https://i.pinimg.com/originals/2b/2d/2e/2b2d2e2b0295d529c58f31527f9a6dcd.jpg",
+    //             "width": 1052,
+    //             "height": 1300
+    //         }
+    //     },
+    //     "id": "351140102197375629"
+    // }, {
+    //     "note": "Good Old Krod, The Half-Orc Rogue... with a Flail. - Imgur",
+    //     "image": {
+    //         "original": {
+    //             "url": "https://i.pinimg.com/originals/35/9c/06/359c06a8d5ce831d3b87b4bf93f936e4.jpg",
+    //             "width": 640,
+    //             "height": 1748
+    //         }
+    //     },
+    //     "id": "351140102197252913"
+    // }, {
+    //     "note": "My 47 Wholesome 'Cat's Café' Comics That Will Make Your Day",
+    //     "image": {
+    //         "original": {
+    //             "url": "https://i.pinimg.com/originals/5b/88/d4/5b88d4284211b83c844d1933e090bdbd.jpg",
+    //             "width": 880,
+    //             "height": 1343
+    //         }
+    //     },
+    //     "id": "351140102197104696"
+    // }]
+
+    // this.setState({ 
+    //   pins: temp, 
+    //   showSlides: true 
+    // });
+
+    // ***
+
     let self = this;
-    // console.log(`https://api.pinterest.com/v1/boards/${this.state.username}/${boardName}/pins/?access_token=${this.state.accessToken}`);//&fields=id,image,note`);
     axios.get(`https://api.pinterest.com/v1/boards/${this.state.username}/${boardName}/pins/?access_token=${this.state.accessToken}&fields=id,image,note`)
       .then(resp => {
         console.log(`PINS`, resp);
-        self.setState({ pins: resp.data.data });
-        self.setState({ page: resp.data.page });
+
+        // Set the pins, next page, and start the slideshow
+        self.setState({ 
+          pins: resp.data.data, 
+          page: resp.data.page, 
+          showSlides: true  
+        });
       })
       .catch(err => {
         console.error(`BAD BOARD`, err);
@@ -155,37 +215,52 @@ export default class App extends React.Component {
   }
   // ***
 
+  // Closes the slideshow overlay
+  closeSlideshow = () => {
+    this.setState({ 
+      showSlides: false, 
+      disableBoards: false 
+    });
+  }
+
+  // Renders the slideshow overlay if the state is set to show it
   renderSlideshow() {
     if (this.state.showSlides) {
       return <Slideshow
+        className="slideshow"
         pins={ this.state.pins }
+        closeSlideshow={ this.closeSlideshow }
       ></Slideshow>
     }
   }
 
   render() {
+    
     return (
       <Router className="App">
-        <button onClick={this.logState}>STATE</button>
+        <button onClick={ this.logState }>STATE</button>
         { this.renderSlideshow() }
         <Route 
           path="/"
-          render={(props) => <Start { ...props } getAccessToken={ this.getAccessToken }></Start>} 
+          render={ (props) => <Start { ...props } getAccessToken={ this.getAccessToken }></Start> } 
           exact
         />
         <Route
           path="/boards"
-          render={(props) => <Boards { ...props } 
-          boards={ this.state.boardInfo }
-          makeRequest={ this.makeRequest } 
-          inputChange={ this.inputChange }
-          getBoards={ this.getBoards }
-          boardInfo={ this.state.boardInfo }
-          selectBoard={ this.selectBoard }></Boards>}
+          render={ (props) => 
+            <Boards { ...props } 
+              boards={ this.state.boardInfo }
+              makeRequest={ this.makeRequest } 
+              inputChange={ this.inputChange }
+              getBoards={ this.getBoards }
+              boardInfo={ this.state.boardInfo }
+              selectBoard={ this.selectBoard }
+              disableBoards={ this.state.disableBoards }>
+            </Boards> }
         />
         <Route 
           path="/error"
-          render={(props) => <Error { ...props }></Error>}
+          render={ (props) => <Error { ...props }></Error> }
         />
       </Router>
     );

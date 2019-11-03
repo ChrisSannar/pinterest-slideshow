@@ -4,10 +4,6 @@ import './Boards.css';
 
 export default class Boards extends React.Component {
 
-  constructor(props) {
-    super(props);
-  }
-
   listBoards = (boardInfo) => {
     let result = [];
 
@@ -15,7 +11,11 @@ export default class Boards extends React.Component {
       let name = board.url.split(`/`)[board.url.split(`/`).length - 2];
 
       result.push(
-        <button key={board.id} className="board-btn" onClick={() => this.props.selectBoard(name)}>
+        <button 
+          key={ board.id }
+          className={ this.props.disableBoards ? `board-btn-disabled` : `board-btn` }
+          disabled={ this.props.disableBoards }
+          onClick={ () => this.props.selectBoard(name) }>
           <div className="board-text">
             { `${board.name}` }
           </div>

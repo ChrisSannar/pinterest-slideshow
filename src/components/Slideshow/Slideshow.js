@@ -6,10 +6,10 @@ export default class Slideshow extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      index: 0,
-      pins: this.props.pins,
+      index: 0
     }
 
+    this.Over = React.createRef();
     this.Center = React.createRef();
     this.Prev = React.createRef();
     this.Next = React.createRef();
@@ -18,6 +18,7 @@ export default class Slideshow extends React.Component {
     this.close = this.close.bind(this);
     this.handleKey = this.handleKey.bind(this);
     this.handleMouse = this.handleMouse.bind(this);
+
     window.addEventListener(`keydown`, this.handleKey);
     window.addEventListener(`mousemove`, this.handleMouse);
 
@@ -30,9 +31,11 @@ export default class Slideshow extends React.Component {
     this.Exit.current.style.opacity = 1;
 
     setTimeout(() => {
-      this.Prev.current.style.opacity = 0;
-      this.Next.current.style.opacity = 0;
-      this.Exit.current.style.opacity = 0;
+      if (this.Prev.current && this.Next.current && this.Exit.current) {
+        this.Prev.current.style.opacity = 0;
+        this.Next.current.style.opacity = 0;
+        this.Exit.current.style.opacity = 0;
+      }
     }, 3000);
   }
 
@@ -48,15 +51,33 @@ export default class Slideshow extends React.Component {
   }
 
   // Moves the index of the current pin
-  changePin(indexChange) {
-    this.props.addMorePins(this.state.index);
-    if (indexChange + this.state.index < 0) {
-      this.setState({ index: this.state.pins.length - 1 });
-    } else {
-      this.setState({ index: (this.state.index + indexChange) % this.state.pins.length });
-    }
+  async changePin(indexChange) {
+
+    // Fade out the previous image
+    await new Promise(res => {
+      this.Center.current.style.opacity = 0;
+      setTimeout(() => {
+        res(true);
+      }, 200);
+    });
+
+    // Change the image (but wait if we're gathering more pins)
+    this.props.addMorePins(this.state.index)
+      .then(result => {
+        if (!result){
+          if (indexChange + this.state.index < 0) {
+            this.setState({ index: this.props.pins.length - 1 });
+          } else {
+            this.setState({ index: (this.state.index + indexChange) % this.props.pins.length });
+          }
+        } else {
+          this.setState({ index: this.state.index + 1});
+        }
+      });
+
   }
   
+  // Provides navigation without a mouse
   handleKey(event) {
     // console.log(this.centerPin.current);
     switch(event.keyCode) {
@@ -85,8 +106,17 @@ export default class Slideshow extends React.Component {
     }
   }
 
-  // A nice bouse effect that makes the buttons fade when they aren't needed
+  // Adds a nice clean effect that makes the buttons fade when they aren't needed
   handleMouse(event) {
+    
+    // Makes the mouse disappear if not used for a few seconds
+    this.Over.current.style.cursor = `pointer`;
+    let self = this;
+    setTimeout(() => {
+      if (self.Over.current) {
+        self.Over.current.style.cursor = `none`;
+      }
+    }, 4000);
 
     // Prev
     let left = this.Prev.current.getBoundingClientRect().right + 50;
@@ -106,7 +136,6 @@ export default class Slideshow extends React.Component {
 
     // Exit
     let etop = this.Exit.current.getBoundingClientRect().bottom + 50;
-    // let eleft = this.Exit.current.getBoundingClientRect().left - 50;
     if (event.x > right && event.y < etop) {
       this.Exit.current.style.opacity = 1;
     } else {
@@ -114,13 +143,51 @@ export default class Slideshow extends React.Component {
     }
   }
 
+  async imageLoaded() {
+    // Fade the image back in
+    await new Promise(res => {
+      setTimeout(() => {
+        this.Center.current.style.opacity = 1;
+        res(true);
+      }, 200);
+    });
+  }
+
   render () {
     return (
-      <div className="overlay">
-        <span 
-          className="exit" 
-          onClick={ this.close }
-          ref={ this.Exit }>X</span>
+      <div className="overlay" ref={ this.Over }>
+
+        <div className="options" ref={ this.Exit }>
+          <input 
+            className="center-img-checkbox checkbox" 
+            type="checkbox" 
+            name="center-img" 
+            onClick={ (temp) => {
+              // Centers or Baslines the image on the page
+              if (temp.target.checked){
+                this.Center.current.style.alignItems = `baseline`;
+              } else {
+                this.Center.current.style.alignItems = `center`;
+              }
+          }} />
+          <input 
+            className="width-img-checkbox checkbox" 
+            type="checkbox" 
+            name="with-img" 
+            onClick={ (temp) => {
+              // Sets the image width to appear on the full page
+              if (temp.target.checked){
+                this.Center.current.children[0].style.maxHeight = `100%`;
+              } else {
+                this.Center.current.children[0].style.maxHeight = ``;
+              }
+          }} />
+          <span 
+            className="exit-btn" 
+            onClick={ this.close }>
+              X
+          </span>
+        </div>
         <div className="slideshow">
           <span 
             className="prev" 
@@ -132,7 +199,11 @@ export default class Slideshow extends React.Component {
             className="scrollable" 
             onClick={ () => this.changePin(1) } 
             ref={ this.Center }>
-            <img className="center-pin" src={ this.state.pins[this.state.index].image.original.url } alt="Current Pin"/>
+            <img 
+              className="center-pin" 
+              src={ this.props.pins[this.state.index].image.original.url }
+              onLoad={ this.imageLoaded.bind(this) }
+              alt="Current Pin"/>
           </div>
           <span 
             className="next" 

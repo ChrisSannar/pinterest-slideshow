@@ -47,7 +47,7 @@ export default class App extends React.Component {
       disableBoards: false,
       username: `chrissannar`, // ``, ***
       showSlides: false, // false,
-      pins: [1,2,3],
+      pins: [], // ***
       page: {}
     };
 
@@ -160,60 +160,65 @@ export default class App extends React.Component {
     this.setState({ disableBoards: true });
 
     // ***
-    // let temp = [{
-    //     "note": "Funny memes",
-    //     "image": {
-    //         "original": {
-    //             "url": "https://i.pinimg.com/originals/2b/2d/2e/2b2d2e2b0295d529c58f31527f9a6dcd.jpg",
-    //             "width": 1052,
-    //             "height": 1300
-    //         }
-    //     },
-    //     "id": "351140102197375629"
-    // }, {
-    //     "note": "Good Old Krod, The Half-Orc Rogue... with a Flail. - Imgur",
-    //     "image": {
-    //         "original": {
-    //             "url": "https://i.pinimg.com/originals/35/9c/06/359c06a8d5ce831d3b87b4bf93f936e4.jpg",
-    //             "width": 640,
-    //             "height": 1748
-    //         }
-    //     },
-    //     "id": "351140102197252913"
-    // }, {
-    //     "note": "My 47 Wholesome 'Cat's Café' Comics That Will Make Your Day",
-    //     "image": {
-    //         "original": {
-    //             "url": "https://i.pinimg.com/originals/5b/88/d4/5b88d4284211b83c844d1933e090bdbd.jpg",
-    //             "width": 880,
-    //             "height": 1343
-    //         }
-    //     },
-    //     "id": "351140102197104696"
-    // }]
-
-    // this.setState({ 
-    //   pins: temp, 
-    //   showSlides: true 
-    // });
-
+    this.setState({ 
+      pins: TEMP_PINS, 
+      showSlides: true 
+    });
     // ***
 
-    let self = this;
-    axios.get(`https://api.pinterest.com/v1/boards/${this.state.username}/${boardName}/pins/?access_token=${this.state.accessToken}&fields=id,image,note`)
-      .then(resp => {
-        console.log(`PINS`, resp);
+    // let self = this;
+    // axios.get(`https://api.pinterest.com/v1/boards/${this.state.username}/${boardName}/pins/?access_token=${this.state.accessToken}&fields=id,image,note`)
+    //   .then(resp => {
 
-        // Set the pins, next page, and start the slideshow
-        self.setState({ 
-          pins: resp.data.data, 
-          page: resp.data.page, 
-          showSlides: true  
-        });
-      })
-      .catch(err => {
-        console.error(`BAD BOARD`, err);
-      });
+    //     // Set the pins, next page, and start the slideshow
+    //     self.setState({ 
+    //       pins: resp.data.data, 
+    //       page: resp.data.page, 
+    //       showSlides: true  
+    //     });
+    //   })
+    //   .catch(err => {
+    //     console.error(`BAD BOARD`, err);
+    //   });
+  }
+
+  // Checks the current index, and if pass the point, adds more pins
+  // Returns true if more pins were retrieved, false otherwise
+  addMorePins = (currentIndex) => {
+    return new Promise((res, rej) => {
+      if (currentIndex % PINS_PER_REQUEST === PINS_PER_REQUEST - 1) {
+        console.log(`moar`);
+        // ***
+        if (this.state.page) {
+          this.setState({ 
+            pins: this.state.pins.concat(NEXT_PAGE.data),
+            page: null, // NEXT_PAGE.page
+          });
+  
+          setTimeout(() => {
+            console.log(`TIME`);
+            res(true);
+          }, 2000);
+        } else {
+          setTimeout(() => {
+            console.log(`TIME2`);
+            res(false);
+          }, 2000);
+        }
+        // ***
+  
+        // axios.get(this.state.page.next)
+        //   .then(resp => {
+        //     console.log(`RESP CON`, resp);
+        //     this.setState({ 
+        //       pins: this.state.pins.concat(resp.data.data),
+        //       page: resp.data.page
+        //     });
+        //     res(true);
+        //   });
+      }
+      res(false);
+    })
   }
 
   // ***
@@ -228,32 +233,6 @@ export default class App extends React.Component {
       showSlides: false, 
       disableBoards: false 
     });
-  }
-
-  // Checks the current index, and if pass the point, adds more pins
-  addMorePins = (currentIndex) => {
-    console.log(currentIndex, currentIndex % PINS_PER_REQUEST, PINS_PER_REQUEST - 2);
-    if (currentIndex % PINS_PER_REQUEST === PINS_PER_REQUEST - 2) {
-      
-      // ***
-      // let newPins = NEXT_PAGE.data;
-      // let moar = this.state.pins;
-      // moar = moar.concat(newPins);
-      // console.log(`MOAR`, newPins, moar);
-      // this.setState({ 
-      //   pins: moar,
-      //   page: NEXT_PAGE.page
-      // }); 
-      // ***
-
-      axios.get(this.state.page.next)
-        .then(resp => {
-          this.setState({ 
-            pins: this.state.pins.concat(resp.data),
-            page: resp.page
-          });
-        });
-    }
   }
 
   // Renders the slideshow overlay if the state is set to show it
@@ -300,3 +279,257 @@ export default class App extends React.Component {
     );
   };
 }
+
+// ***
+export const TEMP_PINS = [{
+  "note": "Funny memes",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/2b/2d/2e/2b2d2e2b0295d529c58f31527f9a6dcd.jpg",
+          "width": 1052,
+          "height": 1300
+      }
+  },
+  "id": "351140102197375629"
+}, {
+  "note": "Good Old Krod, The Half-Orc Rogue... with a Flail. - Imgur",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/35/9c/06/359c06a8d5ce831d3b87b4bf93f936e4.jpg",
+          "width": 640,
+          "height": 1748
+      }
+  },
+  "id": "351140102197252913"
+}, {
+  "note": "My 47 Wholesome 'Cat's Café' Comics That Will Make Your Day",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/5b/88/d4/5b88d4284211b83c844d1933e090bdbd.jpg",
+          "width": 880,
+          "height": 1343
+      }
+  },
+  "id": "351140102197104696"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/a0/58/df/a058dfa8ae776372e50c81b4a847b9f4.jpg",
+          "width": 480,
+          "height": 480
+      }
+  },
+  "id": "351140102196638923"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/85/87/41/8587418ac72e4f2fe61ea59916dda6d4.jpg",
+          "width": 543,
+          "height": 701
+      }
+  },
+  "id": "351140102196587746"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/c4/d3/da/c4d3da058d70fb454eb2347e1b3bad91.jpg",
+          "width": 533,
+          "height": 417
+      }
+  },
+  "id": "351140102196549914"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/97/2f/6f/972f6fb75bbeadd80a56220bd3a89c10.jpg",
+          "width": 710,
+          "height": 960
+      }
+  },
+  "id": "351140102196412962"
+}, {
+  "note": "Well WE know that...",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/40/a4/d6/40a4d693a6c84f194793cebdc7a4ab3e.jpg",
+          "width": 570,
+          "height": 570
+      }
+  },
+  "id": "351140102196352768"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/5c/2b/71/5c2b7155195cb89ac1593520fdec96af.jpg",
+          "width": 690,
+          "height": 1237
+      }
+  },
+  "id": "351140102196310868"
+}, {
+  "note": "tiger jumping to catch meat and falling in the water",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/a5/4c/57/a54c57fe156ccecf12fc8fe96b3e76dd.jpg",
+          "width": 480,
+          "height": 854
+      }
+  },
+  "id": "351140102196208696"
+}, {
+  "note": "Hooray for teamwork!",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/54/ef/98/54ef9850edd027f520b626ea8aaa696f.png",
+          "width": 800,
+          "height": 4122
+      }
+  },
+  "id": "351140102196079503"
+}, {
+  "note": "This will be a lot shorter movie",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/87/79/83/87798351b167a60397f58c8df5186f07.jpg",
+          "width": 800,
+          "height": 995
+      }
+  },
+  "id": "351140102196030240"
+}, {
+  "note": "Owlturd Comics Okay but seriously, how the heck do I keep turning my alarm off without waking up!!! I get so mad about this problem with me! T^T and the worst part is that idk how to solve this problem!",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/d6/7d/2c/d67d2cb696c25dcf6582626f0de490d4.png",
+          "width": 880,
+          "height": 4642
+      }
+  },
+  "id": "351140102196030092"
+}, {
+  "note": "Pinterest:@jalissalyons",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/d8/60/7b/d8607b450efe051a155cef4334a6ab7f.jpg",
+          "width": 535,
+          "height": 720
+      }
+  },
+  "id": "351140102196000688"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/f8/19/78/f819781baa0289c31b382bbcfdfce284.png",
+          "width": 478,
+          "height": 720
+      }
+  },
+  "id": "351140102196000681"
+}, {
+  "note": "Oh, Debbie",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/cd/6c/a3/cd6ca30624802a50d0f5d04bd79956b8.jpg",
+          "width": 500,
+          "height": 375
+      }
+  },
+  "id": "351140102196000673"
+}, {
+  "note": ".",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/15/ad/2a/15ad2a7f0edbc4bbdd27ae0e70d88c71.jpg",
+          "width": 640,
+          "height": 1136
+      }
+  },
+  "id": "351140102196000670"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/95/60/2c/95602c30ab8d2e2dec3a8b42a3074d3b.jpg",
+          "width": 421,
+          "height": 750
+      }
+  },
+  "id": "351140102196000658"
+}, {
+  "note": "21 Of The Funniest Pics On The Net",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/1a/54/66/1a54660072cdb3f78374cd7f0ad0b386.jpg",
+          "width": 460,
+          "height": 344
+      }
+  },
+  "id": "351140102196000652"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/98/18/f7/9818f76589e0e6ca7bcd8057684bded8.jpg",
+          "width": 250,
+          "height": 309
+      }
+  },
+  "id": "351140102195972788"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/77/c4/52/77c4529b1868705d66769282c17178f3.jpg",
+          "width": 640,
+          "height": 619
+      }
+  },
+  "id": "351140102195960675"
+}, {
+  "note": "reddit: the front page of the internet",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/79/7c/11/797c114f659cfb6958fa07861d6b8ef1.jpg",
+          "width": 640,
+          "height": 853
+      }
+  },
+  "id": "351140102195958897"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/aa/8d/d0/aa8dd0c84cc9100bbad227c842994db5.jpg",
+          "width": 540,
+          "height": 635
+      }
+  },
+  "id": "351140102195903182"
+}, {
+  "note": " ",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/49/1c/aa/491caa5650eddb979ab4f64434d91aa5.jpg",
+          "width": 640,
+          "height": 887
+      }
+  },
+  "id": "351140102195903169"
+}, {
+  "note": "Poor kids | go to www.thegreatmemes.com for more funny posts",
+  "image": {
+      "original": {
+          "url": "https://i.pinimg.com/originals/7d/d6/2b/7dd62b4253c24d84dba68e3763edd110.jpg",
+          "width": 750,
+          "height": 1007
+      }
+  },
+  "id": "351140102195878990"
+}];
+// ***

@@ -54,26 +54,21 @@ export default class Slideshow extends React.Component {
   async changePin(indexChange) {
 
     // Fade out the previous image
-    await new Promise(res => {
-      this.Center.current.style.opacity = 0;
-      setTimeout(() => {
-        res(true);
-      }, 200);
-    });
+    await this.fadeOutImage();
 
     // Change the image (but wait if we're gathering more pins)
-    this.props.addMorePins(this.state.index)
-      .then(result => {
-        if (!result){
-          if (indexChange + this.state.index < 0) {
-            this.setState({ index: this.props.pins.length - 1 });
-          } else {
-            this.setState({ index: (this.state.index + indexChange) % this.props.pins.length });
-          }
-        } else {
-          this.setState({ index: this.state.index + 1});
-        }
-      });
+    let result = await this.props.addMorePins(this.state.index);
+    console.log(`RESULT`, result);
+      
+    if (!result){
+      if (indexChange + this.state.index < 0) {
+        this.setState({ index: this.props.pins.length - 1 });
+      } else {
+        this.setState({ index: (this.state.index + indexChange) % this.props.pins.length });
+      }
+    } else {
+      this.setState({ index: this.state.index + 1});
+    }
 
   }
   
@@ -87,7 +82,7 @@ export default class Slideshow extends React.Component {
         break;
       case 38:  // Up
         event.preventDefault();
-        // this.centerPin.current.scrollBy(-100);
+        // this.Center.current.children[0].scrollBy(-100);
         break;
       case 39:  // Right
         event.preventDefault();
@@ -95,7 +90,7 @@ export default class Slideshow extends React.Component {
         break;
       case 40:  // Down
         event.preventDefault();
-        // this.centerPin.current.scrollBy(100);
+        // this.Center.current.children[0].scrollBy(100);
         break;
       case 27:  // Escape
         event.preventDefault();
@@ -143,8 +138,18 @@ export default class Slideshow extends React.Component {
     }
   }
 
-  async imageLoaded() {
-    // Fade the image back in
+  // Fades out the image
+  fadeOutImage = async function() {
+    return new Promise(res => {
+      this.Center.current.style.opacity = 0;
+      setTimeout(() => {
+        res(true);
+      }, 200);
+    });
+  }
+
+  // Fades the image back in once it has loaded
+  async fadeInImage() {
     await new Promise(res => {
       setTimeout(() => {
         this.Center.current.style.opacity = 1;
@@ -153,11 +158,24 @@ export default class Slideshow extends React.Component {
     });
   }
 
+  // Sets the stage to shuffle the pins
+  async shuffleImageChange() {
+    await this.fadeOutImage();
+    this.props.shufflePins();
+    this.setState({ index: 0 });
+  }
+
   render () {
     return (
       <div className="overlay" ref={ this.Over }>
 
         <div className="options" ref={ this.Exit }>
+          <button
+            className="shuffel-button"
+            type="button"
+            onClick={ this.shuffleImageChange.bind(this) }>
+            Shuffle
+          </button>
           <input 
             className="center-img-checkbox checkbox" 
             type="checkbox" 
@@ -202,7 +220,7 @@ export default class Slideshow extends React.Component {
             <img 
               className="center-pin" 
               src={ this.props.pins[this.state.index].image.original.url }
-              onLoad={ this.imageLoaded.bind(this) }
+              onLoad={ this.fadeInImage.bind(this) }
               alt="Current Pin"/>
           </div>
           <span 

@@ -31,8 +31,6 @@ export default class Boards extends React.Component {
     return (
       <div className="center-page">
         <h2>Pick a Board</h2>
-        <input name="testQuery" onChange={ this.props.inputChange }/>
-        <button onClick={ this.props.makeRequest }>Go</button>
         <button onClick={ this.props.getBoards }>Get Boards</button>
         <div className="boardsDisplay">{ this.listBoards(this.props.boardInfo) }</div>
       </div>

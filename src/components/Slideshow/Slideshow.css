@@ -39,6 +39,7 @@
   float: right;
   cursor: pointer;
   z-index: 3;
+  transition: 0.2s;
 }
 
 .options {
@@ -49,6 +50,7 @@
   display: flex;
   align-items: center;
   z-index: 3;
+  transition: 0.2s;
 }
 
 .checkbox {
@@ -59,6 +61,7 @@
   border-radius: 3px;
   color: #cacece;
   cursor: pointer;
+  transition: 0.2s;
 }
 
 .checkbox:after {
@@ -72,7 +75,7 @@
 }
 
 .options *:not(:last-child) {
-  margin-right: 1.5em;
+  margin-right: 1em;
 }
 
 .center-pin {
@@ -93,5 +96,41 @@
   overflow: scroll;
   margin-top: 1em;
   cursor: pointer;
-  transition: 0.15s;
+  transition: 0.2s;
+}
+
+/* Clear the Button */
+.shuffel-button {
+  display: inline-block;
+  border: 2px solid #FFFFFF;
+  border-radius: 3px;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  text-decoration: none;
+  background: #000000;
+  color: #ffffff;
+  font-family: sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background 250ms ease-in-out, 
+              transform 150ms ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.shuffel-button:hover {
+  transform: scale(1.04);
+}
+
+.exit-btn:hover, .checkbox:hover {
+  transform: scale(1.2);
+}
+
+.shuffel-button:focus {
+  outline: none;
+}
+
+.shuffel-button:active {
+  transform: scale(0.97);
 }

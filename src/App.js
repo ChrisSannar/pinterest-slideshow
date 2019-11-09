@@ -42,7 +42,6 @@ export default class App extends React.Component {
     // Set our state with the access token to get it everywehre
     this.state = { 
       accessToken: currentAccessToken,
-      query: ``, // ***
       boardInfo: temp,  // [], ***
       disableBoards: false,
       username: `chrissannar`, // ``, ***
@@ -53,8 +52,6 @@ export default class App extends React.Component {
 
     // Binding the functions to use here
     this.getAccessToken = this.getAccessToken.bind(this);
-    this.makeRequest = this.makeRequest.bind(this);
-    this.inputChange = this.inputChange.bind(this);
     this.getBoards = this.getBoards.bind(this);
     this.logState = this.logState.bind(this);
     this.selectBoard = this.selectBoard.bind(this);
@@ -113,33 +110,6 @@ export default class App extends React.Component {
       });
   }
 
-  // *** These are here to test out the data we're getting back from the api
-  inputChange(event) {
-    this.setState({ query: event.target.value });
-  }
-
-  makeRequest() {
-
-    // Current: look up pins
-    if (this.state.query.length > 0) {
-      axios.get(`https://api.pinterest.com/v1/me/pins/?access_token=${this.state.accessToken}`)
-        .then(resp => {
-          console.log(`PINS`, resp);
-        })
-        .catch(err => {
-          console.error(`BAD PINS`, err);
-        });
-      // axios.get(`https://api.pinterest.com/${this.state.query}/?access_token=${this.state.accessToken}`)
-      //   .then(resp => {
-      //     console.log(resp);
-      //   })
-      //   .catch(err => {
-      //     console.error(`ERR`, err);
-      //   });
-    }
-  }
-  // ***
-
   // Gets a list of the users boards to allow them to pick from
   getBoards() {
     let self = this;
@@ -167,7 +137,7 @@ export default class App extends React.Component {
     // ***
 
     // let self = this;
-    // axios.get(`https://api.pinterest.com/v1/boards/${this.state.username}/${boardName}/pins/?access_token=${this.state.accessToken}&fields=id,image,note`)
+    // axios.get(`https://api.pinterest.com/v1/boards/${this.state.username}/${boardName}/pins/?access_token=${this.state.accessToken}&limit=${PINS_PER_REQUEST}&fields=id,image,note`)
     //   .then(resp => {
 
     //     // Set the pins, next page, and start the slideshow
@@ -182,14 +152,14 @@ export default class App extends React.Component {
     //   });
   }
 
-  // Checks the current index, and if pass the point, adds more pins
-  // Returns true if more pins were retrieved, false otherwise
+  // Checks the current index, and if we're at the end of the array, we need more pins
+  // Returns true if more pins were retrieved, false otherwise (either bad network or end of board)
   addMorePins = (currentIndex) => {
     return new Promise((res, rej) => {
-      if (currentIndex % PINS_PER_REQUEST === PINS_PER_REQUEST - 1) {
-        console.log(`moar`);
-        // ***
-        if (this.state.page) {
+      if (currentIndex === this.state.pins.length - 1) {
+
+        if (this.state.page) {  // If we got another page to pull
+          // ***
           this.setState({ 
             pins: this.state.pins.concat(NEXT_PAGE.data),
             page: null, // NEXT_PAGE.page
@@ -198,27 +168,39 @@ export default class App extends React.Component {
           setTimeout(() => {
             console.log(`TIME`);
             res(true);
-          }, 2000);
+          }, 200);
+          // ***
+
+          // axios.get(this.state.page.next)
+          //   .then(resp => {
+          //     console.log(`RESP CON`, resp);
+          //     this.setState({ 
+          //       pins: this.state.pins.concat(resp.data.data),
+          //       page: resp.data.page
+          //     });
+          //     res(true);
+          //   });
+
         } else {
-          setTimeout(() => {
-            console.log(`TIME2`);
-            res(false);
-          }, 2000);
+          res(false);
         }
-        // ***
-  
-        // axios.get(this.state.page.next)
-        //   .then(resp => {
-        //     console.log(`RESP CON`, resp);
-        //     this.setState({ 
-        //       pins: this.state.pins.concat(resp.data.data),
-        //       page: resp.data.page
-        //     });
-        //     res(true);
-        //   });
+
+      } else {
+        res(false);
       }
-      res(false);
     })
+  }
+
+  shufflePins = () => {
+    let result = this.state.pins;
+    for (let i = 0; i < result.length; i++) {
+      let randIndex = Math.floor(Math.random() * result.length);
+      let temp = result[randIndex];
+      result[randIndex] = result[i];
+      result[i] = temp;
+    }
+    console.log(result);
+    this.setState({ pins: result })
   }
 
   // ***
@@ -243,6 +225,7 @@ export default class App extends React.Component {
         pins={ this.state.pins }
         closeSlideshow={ this.closeSlideshow }
         addMorePins={ this.addMorePins }
+        shufflePins={ this.shufflePins }
       ></Slideshow>
     }
   }
@@ -263,8 +246,6 @@ export default class App extends React.Component {
           render={ (props) => 
             <Boards { ...props } 
               boards={ this.state.boardInfo }
-              makeRequest={ this.makeRequest } 
-              inputChange={ this.inputChange }
               getBoards={ this.getBoards }
               boardInfo={ this.state.boardInfo }
               selectBoard={ this.selectBoard }

@@ -18,6 +18,7 @@ export default class Slideshow extends React.Component {
     this.close = this.close.bind(this);
     this.handleKey = this.handleKey.bind(this);
     this.handleMouse = this.handleMouse.bind(this);
+    
 
     window.addEventListener(`keydown`, this.handleKey);
     window.addEventListener(`mousemove`, this.handleMouse);

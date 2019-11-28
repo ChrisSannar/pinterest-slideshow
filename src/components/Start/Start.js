@@ -7,7 +7,31 @@ export default class Start extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { input: "" }
+    this.state = { moveDown: [] }
+  }
+
+  componentDidMount() {
+    let self = this;
+    let timing = 250;
+    let drop = `20%`;
+
+    // I know it's messy, but it makes each element 'float' in
+    setTimeout(() => {
+      self.setState({ moveDown: [ { transform: `translate(0, ${drop})`, opacity: 1 } ]})
+      setTimeout(() => {
+        self.setState({ moveDown: [ 
+          { transform: `translate(0, ${drop})`, opacity: 1 }, 
+          { transform: `translate(0, ${drop})`, opacity: 1 }
+        ]});
+        setTimeout(() => {
+          self.setState({ moveDown: [ 
+            { transform: `translate(0, ${drop})`, opacity: 1 }, 
+            { transform: `translate(0, ${drop})`, opacity: 1 },
+            { transform: `translate(0, ${drop})`, opacity: 1 }
+          ]})
+        }, timing);
+      }, timing);
+    }, timing);
   }
 
   render() {
@@ -23,7 +47,7 @@ export default class Start extends React.Component {
           }
         })
         .catch(err => {
-          this.props.history.push(`/error`);
+          this.props.history.push(`/error`); // Error otherwise
         });
       return (
         <div className="center-page">
@@ -35,9 +59,10 @@ export default class Start extends React.Component {
     } else {
       return (
         <div className="center-page">
-          <h1>Pinterest Slide Show</h1>
-          <h2>Please login and the select the board you would like to preview.</h2>
+          <h1 style={this.state.moveDown[0]}>Pinterest Slide Show</h1>
+          <h2 style={this.state.moveDown[1]}>Please login and the select the board you would like to preview.</h2>
           <a
+            style={this.state.moveDown[2]}
             href="https://api.pinterest.com/oauth/?response_type=code&client_id=5058642322688884012&scope=read_public&state=768uyFys&redirect_uri=https://localhost:3000/"
           >Login to Pinterest</a>
         </div>

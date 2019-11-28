@@ -59,7 +59,6 @@ export default class Slideshow extends React.Component {
 
     // Change the image (but wait if we're gathering more pins)
     let result = await this.props.addMorePins(this.state.index);
-    console.log(`RESULT`, result);
       
     if (!result){
       if (indexChange + this.state.index < 0) {

@@ -1,9 +1,13 @@
-.center-page {
+.center-page-boards {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+}
+
+.center-page-boards > h2 {
+  transition: 1s;
 }
 
 .board-text {
@@ -21,7 +25,6 @@
   border-radius: 999px;
   font-size: 16px;
   font-weight: 700;
-  transition: 0.15s;
 }
 
 .board-btn-disabled {

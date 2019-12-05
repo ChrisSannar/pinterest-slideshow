@@ -58,7 +58,7 @@ export default class Start extends React.Component {
     // Otherwise, we just go with the normal page
     } else {
       return (
-        <div className="center-page">
+        <div className="center-page-start">
           <h1 style={this.state.moveDown[0]}>Pinterest Slide Show</h1>
           <h2 style={this.state.moveDown[1]}>Please login and the select the board you would like to preview.</h2>
           <a

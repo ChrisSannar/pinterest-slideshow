@@ -9,6 +9,7 @@ export default class Error extends React.Component {
     return (
       <div className="center-page">
         <h2>There was an Error</h2>
+        <p>{ this.props.errorMsg }</p>
       </div>
     );
 

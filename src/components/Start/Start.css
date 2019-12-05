@@ -1,4 +1,4 @@
-.center-page {
+.center-page-start {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6,7 +6,7 @@
   min-height: 100vh;
 }
 
-.center-page > * {
+.center-page-start > * {
   transition: 1s;
   opacity: 0;
 }

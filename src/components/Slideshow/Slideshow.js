@@ -9,6 +9,7 @@ export default class Slideshow extends React.Component {
       index: 0
     }
 
+    // I realize now this probably wasn't the best way of doing this, but hell. Here it is
     this.Over = React.createRef();
     this.Center = React.createRef();
     this.Prev = React.createRef();
@@ -19,7 +20,6 @@ export default class Slideshow extends React.Component {
     this.handleKey = this.handleKey.bind(this);
     this.handleMouse = this.handleMouse.bind(this);
     
-
     window.addEventListener(`keydown`, this.handleKey);
     window.addEventListener(`mousemove`, this.handleMouse);
 
@@ -144,7 +144,7 @@ export default class Slideshow extends React.Component {
       this.Center.current.style.opacity = 0;
       setTimeout(() => {
         res(true);
-      }, 200);
+      }, 300);
     });
   }
 
@@ -154,7 +154,7 @@ export default class Slideshow extends React.Component {
       setTimeout(() => {
         this.Center.current.style.opacity = 1;
         res(true);
-      }, 200);
+      }, 300);
     });
   }
 
@@ -163,6 +163,10 @@ export default class Slideshow extends React.Component {
     await this.fadeOutImage();
     this.props.shufflePins();
     this.setState({ index: 0 });
+  }
+
+  failedImage() {
+    console.log(`IMAGE FAILED TO LOAD`);
   }
 
   render () {
@@ -221,6 +225,7 @@ export default class Slideshow extends React.Component {
               className="center-pin" 
               src={ this.props.pins[this.state.index].image.original.url }
               onLoad={ this.fadeInImage.bind(this) }
+              onError={ this.failedImage.bind(this) }
               alt="Current Pin"/>
           </div>
           <span 

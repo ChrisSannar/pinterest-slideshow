@@ -35,13 +35,14 @@ export default class App extends React.Component {
 
     // Set our state with the access token to get it everywehre
     this.state = { 
-      accessToken: CURRENT_ACCESS_TOKEN, // ***
+      accessToken: '',//CURRENT_ACCESS_TOKEN, // ***
       username: USERNAME, // ***
       boards: BOARDS, // ***
       disableBoards: false,
       showSlides: false,
       pins: [],
-      page: {}
+      page: {},
+      errorMsg: ''
     };
 
     // Binding the functions to use here
@@ -82,7 +83,7 @@ export default class App extends React.Component {
             res(true);
           })
           .catch(err => {
-            console.log(`BAD AUTH ERR`, err);
+            this.setState({ errorMsg: `There was a problem with authentication. Please try again later.`})
             res(false);
           });
       });
@@ -258,17 +259,35 @@ export default class App extends React.Component {
         />
         <Route
           path="/boards"
-          render={ (props) => 
-            <Boards { ...props } 
-              boards={ this.state.boards }
-              getBoards={ this.getBoards }
-              selectBoard={ this.selectBoard }
-              disableBoards={ this.state.disableBoards }>
-            </Boards> }
+          render={ (props) => {
+            if (this.state.accessToken) {
+              return (<Boards { ...props } 
+                  boards={ this.state.boards }
+                  getBoards={ this.getBoards }
+                  selectBoard={ this.selectBoard }
+                  disableBoards={ this.state.disableBoards }>
+                </Boards>);
+            } else {
+              return (<Error 
+                  { ...props } 
+                  errorMsg={ `You don't have an access token. Go to the main page and try again.` }>
+                </Error>);
+            }
+          }}
         />
-        <Route 
+        <Route
           path="/error"
-          render={ (props) => <Error { ...props }></Error> }
+          render={ (props) => <Error
+            { ...props }
+            errorMsg={ this.state.errorMsg }
+          ></Error>}
+        ></Route>
+        <Route 
+          path="/*"
+          render={ (props) => <Error 
+              { ...props }
+              errorMsg={ `That page doesn't exist. Please go back main page.`}>
+            </Error> }
         />
       </Router>
     );

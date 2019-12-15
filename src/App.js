@@ -31,7 +31,7 @@ export default class App extends React.Component {
 
     // Set our state with the access token to get it everywehre
     this.state = { 
-      accessToken: '',//CURRENT_ACCESS_TOKEN, // ***
+      accessToken: CURRENT_ACCESS_TOKEN, // ***
       username: USERNAME, // ***
       boards: BOARDS,
       disableBoards: false,

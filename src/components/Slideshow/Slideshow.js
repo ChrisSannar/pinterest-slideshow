@@ -15,11 +15,11 @@ export default class Slideshow extends React.Component {
     this.Prev = React.createRef();
     this.Next = React.createRef();
     this.Exit = React.createRef();
-    
+
     this.close = this.close.bind(this);
     this.handleKey = this.handleKey.bind(this);
     this.handleMouse = this.handleMouse.bind(this);
-    
+
     window.addEventListener(`keydown`, this.handleKey);
     window.addEventListener(`mousemove`, this.handleMouse);
 
@@ -58,24 +58,24 @@ export default class Slideshow extends React.Component {
     await this.fadeOutImage();
 
     // Change the image (but wait if we're gathering more pins)
-    let result = await this.props.addMorePins(this.state.index);
-      
-    if (!result){
-      if (indexChange + this.state.index < 0) {
-        this.setState({ index: this.props.pins.length - 1 });
-      } else {
-        this.setState({ index: (this.state.index + indexChange) % this.props.pins.length });
-      }
+    // let result = await this.props.addMorePins(this.state.index);
+
+    if (indexChange + this.state.index < 0) {
+      this.setState({ index: this.props.images.length - 1 });
     } else {
-      this.setState({ index: this.state.index + 1});
+      this.setState({ index: (this.state.index + indexChange) % this.props.images.length });
     }
 
   }
-  
+
   // Provides navigation without a mouse
   handleKey(event) {
     // console.log(this.centerPin.current);
-    switch(event.keyCode) {
+    switch (event.keyCode) {
+      case 32:
+        this.props.saveCurrentPin(this.state.index);
+        break;
+
       case 37:  // Left
         event.preventDefault();
         this.changePin(-1);
@@ -92,10 +92,10 @@ export default class Slideshow extends React.Component {
         event.preventDefault();
         // this.Center.current.children[0].scrollBy(100);
         break;
-      case 27:  // Escape
-        event.preventDefault();
-        this.close();
-        break;
+      // case 27:  // Escape
+      //   event.preventDefault();
+      //   this.close();
+      //   break;
       default:
         break;
     }
@@ -103,7 +103,7 @@ export default class Slideshow extends React.Component {
 
   // Adds a nice clean effect that makes the buttons fade when they aren't needed
   handleMouse(event) {
-    
+
     // Makes the mouse disappear if not used for a few seconds
     this.Over.current.style.cursor = `pointer`;
     let self = this;
@@ -120,7 +120,7 @@ export default class Slideshow extends React.Component {
     } else {
       this.Prev.current.style.opacity = 0;
     }
-    
+
     // Next
     let right = this.Next.current.getBoundingClientRect().left - 50;
     if (event.x > right) {
@@ -139,7 +139,7 @@ export default class Slideshow extends React.Component {
   }
 
   // Fades out the image
-  fadeOutImage = async function() {
+  fadeOutImage = async function () {
     return new Promise(res => {
       this.Center.current.style.opacity = 0;
       setTimeout(() => {
@@ -169,70 +169,71 @@ export default class Slideshow extends React.Component {
     console.log(`IMAGE FAILED TO LOAD`);
   }
 
-  render () {
+  render() {
     return (
-      <div className="overlay" ref={ this.Over }>
+      <div className="overlay" ref={this.Over}>
 
-        <div className="options" ref={ this.Exit }>
+        <div className="options" ref={this.Exit}>
           <button
             className="shuffel-button"
             type="button"
-            onClick={ this.shuffleImageChange.bind(this) }>
+            onClick={this.shuffleImageChange.bind(this)}>
             Shuffle
           </button>
-          <input 
-            className="center-img-checkbox checkbox" 
-            type="checkbox" 
-            name="center-img" 
-            onClick={ (temp) => {
+          <input
+            className="center-img-checkbox checkbox"
+            type="checkbox"
+            name="center-img"
+            onClick={(temp) => {
               // Centers or Baslines the image on the page
-              if (temp.target.checked){
+              if (temp.target.checked) {
                 this.Center.current.style.alignItems = `baseline`;
               } else {
                 this.Center.current.style.alignItems = `center`;
               }
-          }} />
-          <input 
-            className="width-img-checkbox checkbox" 
-            type="checkbox" 
-            name="with-img" 
-            onClick={ (temp) => {
+            }} />
+          <input
+            className="width-img-checkbox checkbox"
+            type="checkbox"
+            name="with-img"
+            onClick={(temp) => {
               // Sets the image width to appear on the full page
-              if (temp.target.checked){
+              if (temp.target.checked) {
                 this.Center.current.children[0].style.maxHeight = `100%`;
               } else {
                 this.Center.current.children[0].style.maxHeight = ``;
               }
-          }} />
-          <span 
-            className="exit-btn" 
-            onClick={ this.close }>
-              X
+            }} />
+          <span
+            className="exit-btn"
+            onClick={this.close}>
+            X
           </span>
         </div>
         <div className="slideshow">
-          <span 
-            className="prev" 
-            onClick={ () => this.changePin(-1) }
-            ref={ this.Prev }>
-              PREV
+          <span
+            className="prev"
+            onClick={() => this.changePin(-1)}
+            ref={this.Prev}>
+            PREV
           </span>
-          <div 
-            className="scrollable" 
-            onClick={ () => this.changePin(1) } 
-            ref={ this.Center }>
-            <img 
-              className="center-pin" 
-              src={ this.props.pins[this.state.index].image.original.url }
-              onLoad={ this.fadeInImage.bind(this) }
-              onError={ this.failedImage.bind(this) }
-              alt="Current Pin"/>
+          <div
+            className="scrollable"
+            onClick={() => this.changePin(1)}
+            ref={this.Center}>
+            <img
+              className="center-pin"
+              // src={this.props.pins[this.state.index] ? this.props.pins[this.state.index].image.original.url : ''}
+              src={this.props.images[this.state.index].src || ''}
+              onLoad={this.fadeInImage.bind(this)}
+              onError={this.failedImage.bind(this)}
+              alt="Current Pin" />
           </div>
-          <span 
-            className="next" 
-            onClick={ () => this.changePin(1) }
-            ref={ this.Next }>
-              NEXT
+          <span
+            className="next"
+            onClick={() => this.changePin(1)}
+            ref={this.Next}>
+            NEXT
           </span>
         </div>
       </div>

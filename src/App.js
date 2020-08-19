@@ -1,6 +1,6 @@
 import React from 'react';
-import { 
-  BrowserRouter as Router, 
+import {
+  BrowserRouter as Router,
   Route,
 } from "react-router-dom";
 import axios from 'axios';
@@ -21,7 +21,7 @@ export const PINS_PER_REQUEST = 100;
 // ***
 export let USERNAME = `chrissannar`;
 export let CURRENT_ACCESS_TOKEN = "AhGGc-cOrqBuzjIc9l25gr4VTyewFdpxa7rSRbZGM-hkAaC9LATfgDAAAIaBRjt5LA8gv40AAAAA";
-export let BOARDS = [{"id":"351140170885836297","name":"Reminisce","url":"https://www.pinterest.com/chrissannar/reminisce/"},{"id":"351140170885761183","name":"Art mi Likey","url":"https://www.pinterest.com/chrissannar/art-mi-likey/"},{"id":"351140170885836302","name":"Ha","url":"https://www.pinterest.com/chrissannar/ha/"},{"id":"351140170885693089","name":"I'm Going There","url":"https://www.pinterest.com/chrissannar/im-going-there/"},{"id":"351140170885693091","name":"Art! Animation! and other fun stuff","url":"https://www.pinterest.com/chrissannar/art-animation-and-other-fun-stuff/"},{"id":"351140170885693090","name":"Lets learn some more stuff","url":"https://www.pinterest.com/chrissannar/lets-learn-some-more-stuff/"}];
+export let BOARDS = [{ "id": "351140170885836297", "name": "Reminisce", "url": "https://www.pinterest.com/chrissannar/reminisce/" }, { "id": "351140170885761183", "name": "Art mi Likey", "url": "https://www.pinterest.com/chrissannar/art-mi-likey/" }, { "id": "351140170885836302", "name": "Ha", "url": "https://www.pinterest.com/chrissannar/ha/" }, { "id": "351140170885693089", "name": "I'm Going There", "url": "https://www.pinterest.com/chrissannar/im-going-there/" }, { "id": "351140170885693091", "name": "Art! Animation! and other fun stuff", "url": "https://www.pinterest.com/chrissannar/art-animation-and-other-fun-stuff/" }, { "id": "351140170885693090", "name": "Lets learn some more stuff", "url": "https://www.pinterest.com/chrissannar/lets-learn-some-more-stuff/" }];
 // ***
 
 export default class App extends React.Component {
@@ -30,13 +30,14 @@ export default class App extends React.Component {
     super(props);         // Make sure we get the stuff from upstairs
 
     // Set our state with the access token to get it everywehre
-    this.state = { 
+    this.state = {
       accessToken: CURRENT_ACCESS_TOKEN, // ***
       username: USERNAME, // ***
       boards: BOARDS,
       disableBoards: false,
-      showSlides: false,
-      pins: [],
+      showSlides: true,
+      pins: [{ image: { original: { url: "" } } }],
+      images: [{ src: '' }],
       page: {},
       errorMsg: ''
     };
@@ -50,18 +51,22 @@ export default class App extends React.Component {
     this.chacheImages = this.cacheImages.bind(this);
   }
 
+  componentDidMount() {
+    this.getPins();
+  }
+
   // Gets the access token given the authorization info
   getAccessToken(authCodeData) {
 
     console.log(`AUTH`, authCodeData);
-    
-    if (!this.state.accessToken){
+
+    if (!this.state.accessToken) {
       // Have this to access 'this' inside axios callback
       var self = this;
-      
+
       // A Promise to activate the redirect in the 'Start' component
       return new Promise(res => {
-        
+
         // Get the access token with the Authorization code
         axios.post(`https://api.pinterest.com/v1/oauth/token?grant_type=authorization_code&client_id=5058642322688884012&client_secret=ff2c7720f5546a13cac0e631f5c11810294fb13f333a5ee3673d59df4355e23a&code=${authCodeData.code}`)
           .then(resp => {
@@ -78,7 +83,7 @@ export default class App extends React.Component {
             res(true);
           })
           .catch(err => {
-            this.setState({ errorMsg: `There was a problem with authentication. Please try again later.`})
+            this.setState({ errorMsg: `There was a problem with authentication. Please try again later.` })
             res(false);
           });
       });
@@ -86,7 +91,7 @@ export default class App extends React.Component {
     } else {
       return Promise.resolve(false);
     }
- 
+
   }
 
   // Retrieves the username and set the state with it
@@ -123,7 +128,7 @@ export default class App extends React.Component {
     //   .catch(err => {
     //     console.error(`BAD BOARDS`, err);
     //   });
-    
+
   }
 
   // Gets the data for the given board and sets the state with the given values
@@ -135,10 +140,10 @@ export default class App extends React.Component {
       .then(resp => {
 
         // Set the pins, next page, and start the slideshow
-        self.setState({ 
-          pins: resp.data.data, 
-          page: resp.data.page, 
-          showSlides: true  
+        self.setState({
+          pins: resp.data.data,
+          page: resp.data.page,
+          showSlides: true
         });
       })
       .catch(err => {
@@ -153,12 +158,12 @@ export default class App extends React.Component {
       if (currentIndex === this.state.pins.length - 1) {
 
         if (this.state.page) {  // If we got another page to pull
-          
+
           axios.get(this.state.page.next)
             .then(resp => {
               this.cacheImages(resp.data.data.map(pin => pin.image.original.url));
               console.log(`RESP CON`, resp);
-              this.setState({ 
+              this.setState({
                 pins: this.state.pins.concat(resp.data.data),
                 page: resp.data.page
               });
@@ -177,14 +182,23 @@ export default class App extends React.Component {
 
   // Shuffles the pins to be in a random order
   shufflePins = () => {
-    let result = this.state.pins;
+    // let result = this.state.pins;
+    // for (let i = 0; i < result.length; i++) {
+    //   let randIndex = Math.floor(Math.random() * result.length);
+    //   let temp = result[randIndex];
+    //   result[randIndex] = result[i];
+    //   result[i] = temp;
+    // }
+    // this.setState({ pins: result });
+
+    let result = this.state.images;
     for (let i = 0; i < result.length; i++) {
       let randIndex = Math.floor(Math.random() * result.length);
       let temp = result[randIndex];
       result[randIndex] = result[i];
       result[i] = temp;
     }
-    this.setState({ pins: result })
+    this.setState({ images: result });
   }
 
   // This preloads the pin image so they're cached in the browser and make for a smoother performance
@@ -203,70 +217,106 @@ export default class App extends React.Component {
 
   // Closes the slideshow overlay
   closeSlideshow = () => {
-    this.setState({ 
-      showSlides: false, 
-      disableBoards: false 
+    this.setState({
+      showSlides: false,
+      disableBoards: false
+    });
+  }
+
+  getPins = () => {
+    return new Promise((res, rej) => {
+
+      function importAll(r) {
+        return r.keys().map(r);
+      }
+
+      const images = importAll(require.context('./images', false, /\.(png|jpe?g|svg)$/));
+
+      this.setState({ ...this.state, images: images.map(img => ({ src: img })) });
+      // console.log('mark', __dirname);
+      // let newPins = [1, 2, 3];
+      // newPins = newPins.map(pin => {
+      //   return { image: { original: { url: '' } } }
+      // })
+      // this.setState({ ...this.state, pins: [] })
+      res(true);
     });
   }
 
   // Renders the slideshow overlay if the state is set to show it
-  renderSlideshow() {
+  async renderSlideshow() {
+    await this.getPins();
     if (this.state.showSlides) {
       this.cacheImages(this.state.pins.map(pin => pin.image.original.url));
       return <Slideshow
         className="slideshow"
-        pins={ this.state.pins }
-        closeSlideshow={ this.closeSlideshow }
-        addMorePins={ this.addMorePins }
-        shufflePins={ this.shufflePins }
+        // images={this.state.pins}
+        images={this.state.images}
+        closeSlideshow={this.closeSlideshow}
+        addMorePins={this.addMorePins}
+        shufflePins={this.shufflePins}
       ></Slideshow>
     }
   }
 
+  saveCurrentPin = (index) => {
+    console.log(this.state.images[index].src);
+  }
+
   render() {
-    
-    return (
-      <Router className="App">
-        <button onClick={this.logState}>STATE</button>
-        { this.renderSlideshow() }
-        <Route 
-          path="/"
-          render={ (props) => <Start { ...props } getAccessToken={ this.getAccessToken }></Start> } 
-          exact
-        />
-        <Route
-          path="/boards"
-          render={ (props) => {
-            if (this.state.accessToken) {
-              return (<Boards { ...props } 
-                  boards={ this.state.boards }
-                  getBoards={ this.getBoards }
-                  selectBoard={ this.selectBoard }
-                  disableBoards={ this.state.disableBoards }>
-                </Boards>);
-            } else {
-              return (<Error 
-                  { ...props } 
-                  errorMsg={ `You don't have an access token. Go to the main page and try again.` }>
-                </Error>);
-            }
-          }}
-        />
-        <Route
-          path="/error"
-          render={ (props) => <Error
-            { ...props }
-            errorMsg={ this.state.errorMsg }
-          ></Error>}
-        ></Route>
-        <Route 
-          path="/*"
-          render={ (props) => <Error 
-              { ...props }
-              errorMsg={ `That page doesn't exist. Please go back main page.`}>
-            </Error> }
-        />
-      </Router>
-    );
+
+    return (<Slideshow
+      className="slideshow"
+      // pins={this.state.pins}
+      images={this.state.images}
+      closeSlideshow={this.closeSlideshow}
+      addMorePins={this.addMorePins}
+      shufflePins={this.shufflePins}
+      saveCurrentPin={this.saveCurrentPin}
+    ></Slideshow>)
+
+    // return (
+    //   <Router className="App">
+    //     <button onClick={this.logState}>STATE</button>
+    //     {this.renderSlideshow()}
+    //     <Route
+    //       path="/"
+    //       render={(props) => <Start {...props} getAccessToken={this.getAccessToken}></Start>}
+    //       exact
+    //     />
+    //     <Route
+    //       path="/boards"
+    //       render={(props) => {
+    //         if (this.state.accessToken) {
+    //           return (<Boards {...props}
+    //             boards={this.state.boards}
+    //             getBoards={this.getBoards}
+    //             selectBoard={this.selectBoard}
+    //             disableBoards={this.state.disableBoards}>
+    //           </Boards>);
+    //         } else {
+    //           return (<Error
+    //             {...props}
+    //             errorMsg={`You don't have an access token. Go to the main page and try again.`}>
+    //           </Error>);
+    //         }
+    //       }}
+    //     />
+    //     <Route
+    //       path="/error"
+    //       render={(props) => <Error
+    //         {...props}
+    //         errorMsg={this.state.errorMsg}
+    //       ></Error>}
+    //     ></Route>
+    //     <Route
+    //       path="/*"
+    //       render={(props) => <Error
+    //         {...props}
+    //         errorMsg={`That page doesn't exist. Please go back main page.`}>
+    //       </Error>}
+    //     />
+    //   </Router>
+    // );
   };
 }
